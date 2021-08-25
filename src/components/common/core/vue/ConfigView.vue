@@ -1,6 +1,7 @@
 <template>
   <div class="config" style="height: 79.5vh">
     <el-container>
+      <!-- 组件选择区域 -->
       <el-aside class="nav-left" style="width: 200px; height: 79.5vh">
         <vue-custom-scrollbar
           class="scroll-area el-scrollbar__wrap"
@@ -69,6 +70,7 @@
           </div>
         </vue-custom-scrollbar>
       </el-aside>
+      <!-- 页面配置区域 -->
       <el-container style="height: 79.5vh">
         <el-header style="height: 10vh">
           <el-row>
@@ -98,7 +100,7 @@
               :rules="rules"
               ref="dynamicForm"
               label-width="100px"
-              style="padding: 15px"
+              style="padding: 0px"
             >
               <el-row
                 v-for="(line, index) in lineList"
@@ -310,14 +312,42 @@
                       ></i>
                     </div>
                   </el-form-item>
+                  <div v-if="field.type == 'tree'" style="lineHeight:0px">
+                  <el-input v-if="field.query"
+                    placeholder="输入关键字进行过滤"
+                    v-model="field.queryKey">
+                     <el-button  slot="append" icon="el-icon-search" @click.native="searchNode(field)"></el-button>
+                  </el-input>
                   <el-tree
-                    v-if="field.type == 'tree'"
+                    :props="field.props"
+                    :data="field.data"
+                    :filter-node-method="filterNode"
+                    default-expand-all
+                    :style="`width:${field.compWidth}%`"
+                    :ref="field.code"
+                    @dblclick.native="editCompPro(field, line)"
+                    @check-change="handleCheckChange"
+                  >
+                  </el-tree>
+                  </div>
+
+                  <el-input  v-if="field.type == 'lazyTree' && field.query"
+                    placeholder="输入关键字进行过滤"
+                    v-model="field.queryKey">
+                     <el-button slot="append" icon="el-icon-search" @click="lazySearch(field,dynamicForm)"></el-button>
+                  </el-input>
+                  <el-tree
+                    v-if="field.type == 'lazyTree'"
+                    :node-key="field.nodeKey"
                     :props="field.props"
                     :load="loadNode"
+                    :data="[{name:'root'}]"
                     lazy
-                    show-checkbox
+                    :show-checkbox="field.checkBox"
+                    @dblclick.native="editCompPro(field, line)"
                     @check-change="handleCheckChange"
                     :style="`width:${field.compWidth}%`"
+                    :ref="field.code"
                   >
                   </el-tree>
                   <table-view
@@ -328,10 +358,15 @@
                 </el-col>
               </el-row>
             </el-form>
-            <el-row> </el-row>
-            页面配置区域
-          </div></el-main
-        >
+            <el-row>
+        
+            
+            </el-row>
+            <!-- <div><span style=" border: 1px dashed rgb(158 156 156);"  onClick="addArea()">十 扩展区域</span></div> -->
+           <div><el-button class="button-new-tag" size="medium" @click="addArea">十 扩展区域</el-button></div>
+
+          </div>
+          </el-main>
       </el-container>
     </el-container>
     <el-drawer
@@ -343,9 +378,10 @@
       size="40%"
       ref="drawer"
     >
+    <!-- 设置属性区域 -->
       <div class="demo-drawer__content">
         <el-form :model="proForm">
-          <el-form-item label="编码" label-width="80px">
+          <el-form-item label="编码" label-width="80px" >
             <el-input
               v-model="proForm.code"
               autocomplete="off"
@@ -410,6 +446,15 @@
               placeholder="PX"
             ></el-input-number>
           </el-form-item>
+          <el-form-item label="复选框" label-width="80px">
+            <el-switch v-model="proForm.checkBox"> </el-switch>
+          </el-form-item>
+           <el-form-item label="是否展开" label-width="80px" >
+            <el-switch v-model="proForm.expand"> </el-switch>
+          </el-form-item>
+          <el-form-item label="搜索框" label-width="80px" >
+            <el-switch v-model="proForm.query"> </el-switch>
+          </el-form-item>
           <div
             style="
               border-top: 1px soild #000;
@@ -460,7 +505,8 @@
               style="width: 270px"
             ></el-input>
           </el-form-item>
-          <div
+          
+          <div v-if="proForm.type == tree"
             style="
               border-top: 1px soild #000;
               height: 5px;
@@ -473,7 +519,7 @@
           >
             表头设置
           </div>
-          <el-form-item label-width="20px">
+          <el-form-item label-width="20px" v-if="proForm.type == tree">
             <table class="table table-striped">
               <thead class="thead-dark">
                 <tr>
@@ -547,6 +593,7 @@
               @blur="handleChangeData(proForm)"
             ></el-input>
           </el-form-item>
+          
           <el-form-item label="动态数据" label-width="80px">
             <el-select
               v-model="proForm.dyncReqeustWay"
@@ -587,6 +634,7 @@ import vueCustomScrollbar from "vue-custom-scrollbar";
 import "vue-custom-scrollbar/dist/vueScrollbar.css";
 import TableView from "../../../common/table/TableView";
 import draggable from "vuedraggable";
+var globalCfgObj = {};
 
 export default {
   name: "QueryView",
@@ -662,6 +710,7 @@ export default {
         upload: 1,
         rate: 1,
         tree: 1,
+        lazyTree:1,
         table: 1,
         pagination: 1,
       },
@@ -769,7 +818,14 @@ export default {
       dataList: [
         {
           name: "tree",
-          text: "树型组件",
+          text: "树型组件(同步)",
+          icon: "iconfont icon-shuxingkongjian",
+          iconSize: 21,
+          style: "border: 1px solid #FFFFF",
+        },
+        {
+          name: "lazyTree",
+          text: "树型组件(异步)",
           icon: "iconfont icon-shuxingkongjian",
           iconSize: 21,
           style: "border: 1px solid #FFFFF",
@@ -789,7 +845,17 @@ export default {
           style: "border: 1px solid #FFFFF",
         },
       ],
-      lineList: [],
+      lineList: [{
+        style: "border: 1px dashed rgb(158 156 156);height:160px;",
+        emptyTip: "行配置区域",
+        empty: true,
+        fieldList: [],
+      },{
+        style: "border: 1px dashed rgb(158 156 156);height:100px;",
+        emptyTip: "行配置区域",
+        empty: true,
+        fieldList: [],
+      }],
 
       input: {
         code: "input",
@@ -957,9 +1023,61 @@ export default {
         delStatus: "none",
         props: {
           label: "name",
-          children: "zones",
+          children: "children",
         },
         url: "",
+        expand:false,
+        query : false,
+        checkBox:true,
+        nodeKey:"id",
+        queryKey:'',
+        lazy:false,
+        data:[{
+          id: 1,
+          name: '一级 1',
+          children: [{
+            id: 4,
+            name: '二级 1-1',
+            children: [{
+              id: 9,
+              name: '三级 1-1-1'
+            }, {
+              id: 10,
+              name: '三级 1-1-2'
+            }]
+          }]
+        }, {
+          id: 2,
+          name: '一级 2',
+          children: [{
+            id: 5,
+            name: '二级 2-1'
+          }, {
+            id: 6,
+            name: '二级 2-2'
+          }]
+        }],
+      },
+      lazyTree: {
+        code: "lazyTree",
+        name: "lazyTree",
+        width: "100px",
+        type: "lazyTree",
+        span: 12,
+        needLabel: false,
+        delStatus: "none",
+        props: {
+          label: "name",
+          children: "children",
+        },
+        url: "",
+        expand:false,
+        query : false,
+        checkBox:true,
+        nodeKey:"id",
+        lazy:true,
+        queryKey:''
+
       },
       table: {
         code: "table",
@@ -1042,6 +1160,7 @@ export default {
     },
   },
   created() {
+      globalCfgObj = this;
     //this.$refs.scrollbar__bar.scrollTop = this.$refs.scrollbar__wrap.scrollHeight;
   },
   destroyed() {},
@@ -1076,6 +1195,7 @@ export default {
       }
     },
     addComponet(event, line) {
+      debugger
       let _this = this;
       line.empty = false;
       //let  addComp = _this[this.dropType];
@@ -1126,7 +1246,7 @@ export default {
       let _this = this;
       _this.lineList.push({
         style: "border: 1px dashed rgb(158 156 156);height:160px;",
-        emptyTip: "新配置区域",
+        emptyTip: "行配置区域",
         empty: true,
         fieldList: [],
       });
@@ -1194,11 +1314,6 @@ export default {
     },
     handleNodeClick(data) {
       console.log(data);
-    },
-    loadNode(node, resolve) {
-      if (node.level === 0) {
-        return resolve([{ name: "region1" }, { name: "region2" }]);
-      }
     },
     comMouseMove(field) {
       field.delStatus = "block";
@@ -1300,7 +1415,11 @@ export default {
     handleChangeData(proForm) {
       debugger;
       let _this = this;
-      _this.dynamicForm[proForm.code] = proForm.dataSource;
+      if(proForm && proForm.type === 'tree'){
+        _this.loadNode(proForm.dataSource);
+      }else{
+        _this.dynamicForm[proForm.code] = proForm.dataSource;
+      }
     },
     changeDataLength(proForm) {
       let _this = this;
@@ -1411,6 +1530,20 @@ export default {
         sort: "升序",
       });
     },
+    //tree方法
+    loadNode(node,resolve){
+    },
+    filterNode(value,data){
+      if (!value) return true;
+      return data.name.indexOf(value) !== -1;
+    },
+    lazySearch(field){
+
+    },
+    searchNode(field){
+      let _this = this;
+      this.$refs[field.code][0].filter(field.queryKey);
+    }
   },
 };
 </script>
@@ -1634,4 +1767,12 @@ tr:first-child {
   margin-bottom: 1rem;
   color: #212529;
 }
+.button-new-tag {
+    margin-left: 10px;
+    height: 32px;
+    line-height: 30px;
+    padding-top: 0;
+    padding-bottom: 0;
+    border: 1px dashed rgb(158 156 156);
+  }
 </style>
