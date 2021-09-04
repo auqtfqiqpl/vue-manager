@@ -120,7 +120,7 @@
                   v-for="(field, findex) in line.fieldList"
                   :span="field.span"
                   :key="findex"
-                >
+              >
                   <el-form-item
                     v-if="field.needLabel"
                     :key="index"
@@ -128,10 +128,12 @@
                     :prop="field.code"
                     :label-width="`${field.lableWidth}px`"
                     :ref="field.code"
+                    style="margin-bottom:11px;margin-top:11px"
                   >
                     <div
                       @mousemove="comMouseMove(field)"
                       @mouseleave="comMouseLeave(field)"
+                      :style="`${field.selectedStyle}`"
                     >
                       <el-input
                         v-if="field.type == 'input'"
@@ -272,7 +274,6 @@
                         v-model="dynamicForm[field.code]"
                         :style="`width:${field.compWidth}%`"
                         @dblclick.native="editCompPro(field, line)"
-                        size="medium"
                       >
                         <el-checkbox
                           v-for="(box, aindex) in field.data"
@@ -307,18 +308,19 @@
                       ></el-rate>
                       <i
                         class="iconfont icon-ziyuan"
-                        :style="`font-size: 15px;position:absolute;right:-1px;top:-15px;color:red;display:${field.delStatus}`"
+                        :style="`font-size: 15px;position:absolute;right:-1px;top:-11px;color:red;display:${field.delStatus}`"
                         @click="delComponent(line, findex)"
                       ></i>
                     </div>
                   </el-form-item>
-                  <div v-if="field.type == 'tree'" style="lineHeight:0px">
-                  <el-input v-if="field.query"
+                  
+                  <el-input v-if="field.type == 'tree' && field.query"
                     placeholder="输入关键字进行过滤"
                     v-model="field.queryKey">
                      <el-button  slot="append" icon="el-icon-search" @click.native="searchNode(field)"></el-button>
                   </el-input>
                   <el-tree
+                    v-if="field.type == 'tree'"
                     :props="field.props"
                     :data="field.data"
                     :filter-node-method="filterNode"
@@ -329,7 +331,6 @@
                     @check-change="handleCheckChange"
                   >
                   </el-tree>
-                  </div>
 
                   <el-input  v-if="field.type == 'lazyTree' && field.query"
                     placeholder="输入关键字进行过滤"
@@ -355,6 +356,11 @@
                     :table="field"
                     @dblclick.native="editCompPro(field, line)"
                   ></table-view>
+                    <!-- <i
+                        class="iconfont icon-ziyuan"
+                        :style="`font-size: 15px;position:absolute;right:-1px;top:-15px;color:red;display:${field.delStatus}`"
+                        @click="delComponent(line, findex)"
+                      ></i> -->
                 </el-col>
               </el-row>
             </el-form>
@@ -647,8 +653,7 @@ export default {
   data() {
     return {
       enabled: true,
-      headerList: [
-      ],
+      headerList: [],
       dragging: false,
       regex: {
         0: { dataCheck: "", checkTip: "请输入文本", regExp: /^/ },
@@ -710,7 +715,7 @@ export default {
         upload: 1,
         rate: 1,
         tree: 1,
-        lazyTree:1,
+        lazyTree: 1,
         table: 1,
         pagination: 1,
       },
@@ -845,17 +850,20 @@ export default {
           style: "border: 1px solid #FFFFF",
         },
       ],
-      lineList: [{
-        style: "border: 1px dashed rgb(158 156 156);height:160px;",
-        emptyTip: "行配置区域",
-        empty: true,
-        fieldList: [],
-      },{
-        style: "border: 1px dashed rgb(158 156 156);height:100px;",
-        emptyTip: "行配置区域",
-        empty: true,
-        fieldList: [],
-      }],
+      lineList: [
+        {
+          style: "border: 1px dashed rgb(158 156 156);height:160px;",
+          emptyTip: "行配置区域",
+          empty: true,
+          fieldList: [],
+        },
+        {
+          style: "border: 1px dashed rgb(158 156 156);height:100px;",
+          emptyTip: "行配置区域",
+          empty: true,
+          fieldList: [],
+        },
+      ],
 
       input: {
         code: "input",
@@ -869,6 +877,7 @@ export default {
         drawer: false,
         direction: "rtl",
         dataRequired: false,
+        compWidth:'60'
       },
       textarea: {
         code: "textarea",
@@ -881,6 +890,7 @@ export default {
         delStatus: "none",
         drawer: false,
         direction: "rtl",
+        compWidth:'60'
       },
       select: {
         code: "select",
@@ -1026,37 +1036,48 @@ export default {
           children: "children",
         },
         url: "",
-        expand:false,
-        query : false,
-        checkBox:true,
-        nodeKey:"id",
-        queryKey:'',
-        lazy:false,
-        data:[{
-          id: 1,
-          name: '一级 1',
-          children: [{
-            id: 4,
-            name: '二级 1-1',
-            children: [{
-              id: 9,
-              name: '三级 1-1-1'
-            }, {
-              id: 10,
-              name: '三级 1-1-2'
-            }]
-          }]
-        }, {
-          id: 2,
-          name: '一级 2',
-          children: [{
-            id: 5,
-            name: '二级 2-1'
-          }, {
-            id: 6,
-            name: '二级 2-2'
-          }]
-        }],
+        expand: false,
+        query: false,
+        checkBox: true,
+        nodeKey: "id",
+        queryKey: "",
+        lazy: false,
+        data: [
+          {
+            id: 1,
+            name: "一级 1",
+            children: [
+              {
+                id: 4,
+                name: "二级 1-1",
+                children: [
+                  {
+                    id: 9,
+                    name: "三级 1-1-1",
+                  },
+                  {
+                    id: 10,
+                    name: "三级 1-1-2",
+                  },
+                ],
+              },
+            ],
+          },
+          {
+            id: 2,
+            name: "一级 2",
+            children: [
+              {
+                id: 5,
+                name: "二级 2-1",
+              },
+              {
+                id: 6,
+                name: "二级 2-2",
+              },
+            ],
+          },
+        ],
       },
       lazyTree: {
         code: "lazyTree",
@@ -1071,13 +1092,12 @@ export default {
           children: "children",
         },
         url: "",
-        expand:false,
-        query : false,
-        checkBox:true,
-        nodeKey:"id",
-        lazy:true,
-        queryKey:''
-
+        expand: false,
+        query: false,
+        checkBox: true,
+        nodeKey: "id",
+        lazy: true,
+        queryKey: "",
       },
       table: {
         code: "table",
@@ -1160,13 +1180,13 @@ export default {
     },
   },
   created() {
-      globalCfgObj = this;
+    globalCfgObj = this;
     //this.$refs.scrollbar__bar.scrollTop = this.$refs.scrollbar__wrap.scrollHeight;
   },
   destroyed() {},
   methods: {
     mainDrop() {
-      debugger;
+      // debugger;
       let _this = this;
       if (_this.lineList.length <= 0) {
         this.$message({
@@ -1195,7 +1215,7 @@ export default {
       }
     },
     addComponet(event, line) {
-      debugger
+      ///debugger
       let _this = this;
       line.empty = false;
       //let  addComp = _this[this.dropType];
@@ -1300,7 +1320,7 @@ export default {
     },
     mouseEnter(_event, line) {
       console.log(line);
-
+     // debugger;
       line.style = "border: 1px dashed rgb(158 156 156);";
     },
     mouseLevea(_event, line) {
@@ -1316,10 +1336,14 @@ export default {
       console.log(data);
     },
     comMouseMove(field) {
+      console.log(field.delStatus);
       field.delStatus = "block";
+      field.selectedStyle="border: 1px solid #97c5f5;";
     },
     comMouseLeave(field) {
       field.delStatus = "none";
+      field.selectedStyle="";
+
     },
     delComponent(line, findex) {
       line.fieldList.splice(findex, 1);
@@ -1331,14 +1355,13 @@ export default {
     },
     editCompPro(field, line) {
       let _this = this;
-     // debugger;
+      // debugger;
       _this.drawerVisible = true;
       _this.proForm = field;
       _this.currentField = field;
       _this.currentLine = line;
       //将当前的组件的基本属性 赋值
       //表格赋值
-      
     },
     drawerClose() {
       let _this = this;
@@ -1402,7 +1425,7 @@ export default {
     },
     dataTypeChange(val) {
       let _this = this;
-      debugger;
+      //debugger;
       let regex = _this.regex[val];
       if (regex) {
         _this.proForm.dataCheck = regex.dataCheck;
@@ -1415,9 +1438,9 @@ export default {
     handleChangeData(proForm) {
       debugger;
       let _this = this;
-      if(proForm && proForm.type === 'tree'){
+      if (proForm && proForm.type === "tree") {
         _this.loadNode(proForm.dataSource);
-      }else{
+      } else {
         _this.dynamicForm[proForm.code] = proForm.dataSource;
       }
     },
@@ -1445,7 +1468,7 @@ export default {
           .then((response) => {
             console.log(response);
             if (response.status == _this.$status.success) {
-              debugger
+              debugger;
               //如果存在data 表明是表格和下拉框。。。复合数据结构
               if (response.data.constructor == Array) {
                 proForm.data = response.data;
@@ -1464,7 +1487,7 @@ export default {
           .then((response) => {
             console.log(response);
             if (response.status == _this.$status.success) {
-              debugger
+              debugger;
               //如果存在data 表明是表格和下拉框。。。复合数据结构
               if (response.data.constructor == Array) {
                 proForm.data = response.data;
@@ -1531,19 +1554,16 @@ export default {
       });
     },
     //tree方法
-    loadNode(node,resolve){
-    },
-    filterNode(value,data){
+    loadNode(node, resolve) {},
+    filterNode(value, data) {
       if (!value) return true;
       return data.name.indexOf(value) !== -1;
     },
-    lazySearch(field){
-
-    },
-    searchNode(field){
+    lazySearch(field) {},
+    searchNode(field) {
       let _this = this;
       this.$refs[field.code][0].filter(field.queryKey);
-    }
+    },
   },
 };
 </script>
@@ -1768,11 +1788,11 @@ tr:first-child {
   color: #212529;
 }
 .button-new-tag {
-    margin-left: 10px;
-    height: 32px;
-    line-height: 30px;
-    padding-top: 0;
-    padding-bottom: 0;
-    border: 1px dashed rgb(158 156 156);
-  }
+  margin-left: 10px;
+  height: 32px;
+  line-height: 30px;
+  padding-top: 0;
+  padding-bottom: 0;
+  border: 1px dashed rgb(158 156 156);
+}
 </style>
