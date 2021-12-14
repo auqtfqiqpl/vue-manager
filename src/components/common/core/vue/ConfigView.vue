@@ -133,14 +133,17 @@
                     <div
                       @mousemove="comMouseMove(field)"
                       @mouseleave="comMouseLeave(field)"
-                      :style="`${field.selectedStyle}`"
+                      :style="field.selectedStyle"
+                      :ref="`${field.code}_border`"
                     >
                       <el-input
                         v-if="field.type == 'input'"
                         v-model="dynamicForm[field.code]"
                         :placeholder="field.tip"
+                        :maxlength="field.dataLength"
                         @dblclick.native="editCompPro(field, line)"
                         :style="`width:${field.compWidth}%`"
+                        show-word-limit
                       >
                       </el-input>
                       <el-input
@@ -148,8 +151,10 @@
                         type="textarea"
                         v-model="dynamicForm[field.code]"
                         placeholder="field.tip"
+                        :maxlength="field.dataLength"
                         :style="`width:${field.compWidth}%`"
                         @dblclick.native="editCompPro(field, line)"
+                        show-word-limit
                       ></el-input>
                       <el-input-number
                         v-if="field.type == 'inputNumber'"
@@ -234,10 +239,25 @@
                         @dblclick.native="editCompPro(field, line)"
                       >
                       </el-time-picker>
-                      <el-time-picker
+                       <el-time-picker
                         v-if="
-                          field.type == 'timePicker' &&
-                          field.dataType == 'timerange'
+                          field.type == 'timePicker' &&   field.dataType.indexOf('range') > -1"
+                        v-model="dynamicForm[field.code]"
+                        :picker-options="{
+                          selectableRange: '18:30:00 - 20:30:00',
+                        }"
+                        range-separator="至"
+                        placeholder="任意时间点"
+                        start-placeholder="开始时间"
+                        end-placeholder="结束时间"
+                        :style="`width:${field.compWidth}%`"
+                        @dblclick.native="editCompPro(field, line)"
+                      >
+                      </el-time-picker>
+                      <el-date-picker
+                        v-if="
+                          field.type == 'dateTimePicker' &&
+                          field.dataType == 'datetimerange'
                         "
                         is-range
                         v-model="dynamicForm[field.code]"
@@ -248,7 +268,21 @@
                         :style="`width:${field.compWidth}%`"
                         @dblclick.native="editCompPro(field, line)"
                       >
-                      </el-time-picker>
+                      </el-date-picker>
+                        <el-date-picker
+                        v-if="
+                          field.type == 'dateTimePicker' 
+                          &&   field.dataType.indexOf('range') > -1"
+                        is-range
+                        v-model="dynamicForm[field.code]"
+                        range-separator="至"
+                        start-placeholder="开始日期时间"
+                        end-placeholder="结束日期时间"
+                        placeholder="选择日期时间范围"
+                        :style="`width:${field.compWidth}%`"
+                        @dblclick.native="editCompPro(field, line)"
+                      >
+                      </el-date-picker>
                       <el-switch
                         v-if="field.type == 'switch'"
                         v-model="dynamicForm[field.code]"
@@ -310,10 +344,17 @@
                         class="iconfont icon-ziyuan"
                         :style="`font-size: 15px;position:absolute;right:-1px;top:-11px;color:red;display:${field.delStatus}`"
                         @click="delComponent(line, findex)"
+                        :ref="`${field.code}_del`"
                       ></i>
                     </div>
                   </el-form-item>
-                  
+                   <div
+                    v-if=" field.type == 'tree' || field.type == 'table'"
+                      @mousemove="comMouseMove(field)"
+                      @mouseleave="comMouseLeave(field)"
+                      :style="field.selectedStyle"
+                      :ref="`${field.code}_border`"
+                    >
                   <el-input v-if="field.type == 'tree' && field.query"
                     placeholder="输入关键字进行过滤"
                     v-model="field.queryKey">
@@ -361,6 +402,13 @@
                         :style="`font-size: 15px;position:absolute;right:-1px;top:-15px;color:red;display:${field.delStatus}`"
                         @click="delComponent(line, findex)"
                       ></i> -->
+                        <i
+                        class="iconfont icon-ziyuan"
+                        :style="`font-size: 15px;position:absolute;right:-1px;top:-70px;color:red;display:${field.delStatus}`"
+                        @click="delComponent(line, findex)"
+                        :ref="`${field.code}_del`"
+                      ></i>
+                    </div>
                 </el-col>
               </el-row>
             </el-form>
@@ -482,7 +530,7 @@
             </el-radio-group>
           </el-form-item>
           <el-form-item label="数据类型" label-width="80px">
-            <el-radio-group v-model="proForm.dataType" @change="dataTypeChange">
+            <el-radio-group v-model="proForm.valueDataType" @change="dataTypeChange">
               <el-radio :label="0">文本</el-radio>
               <el-radio :label="1">整数</el-radio>
               <el-radio :label="2">小数</el-radio>
@@ -490,11 +538,38 @@
               <el-radio :label="4">E-MAIL</el-radio>
             </el-radio-group>
           </el-form-item>
+          <el-form-item label="数据长度" label-width="80px">
+            <el-input
+              v-model="proForm.dataLength"
+              :min="1"
+              :max="2000"
+              style="width: 130px"
+              label="长度"
+              placeholder="长度"
+              @change.native="dataTypeChange(proForm.valueDataType)"
+              ></el-input>
+              <span style="color:#000">小数位</span>
+              <el-input
+              v-model="proForm.dataScale"
+              style="width: 130px"
+              label="精度"
+              placeholder="精度"
+              @change.native="dataTypeChange(proForm.valueDataType)"
+              ></el-input>
+          </el-form-item>
           <el-form-item label="数据范围" label-width="80px">
             <el-input
-              v-model="proForm.dataRange"
-              style="width: 270px"
-              @change.native="changeDataLength(proForm)"
+              v-model="proForm.dataStartValue"
+              style="width: 130px"
+              placeholder="最小值"
+              @change.native="dataTypeChange(proForm.valueDataType)"
+            ></el-input>
+            <span style="color:#000">-</span>
+             <el-input
+              v-model="proForm.dataEndValue"
+              style="width: 130px"
+              placeholder="最大值"
+              @change.native="dataTypeChange(proForm.valueDataType)"
             ></el-input>
           </el-form-item>
           <el-form-item label="校验规则" label-width="80px">
@@ -621,7 +696,6 @@
               placeholder="请求路径"
             ></el-input>
             <el-button
-              v-model="proForm.dyncDataSource"
               style="width: 60px"
               placeholder="请求路径"
               type="primary"
@@ -656,30 +730,66 @@ export default {
       headerList: [],
       dragging: false,
       regex: {
-        0: { dataCheck: "", checkTip: "请输入文本", regExp: /^/ },
-        1: {
+        "0": { dataCheck: "", checkTip: "文本数据", regExp: /^/ },
+        "1": {
           dataCheck: "/^(-|+)?[1-9]d*$/",
-          checkTip: "请输入整数",
+          checkTip: "整数数据",
           regExp: /^(\-|\+)?[1-9]\d*$/,
         },
-        2: {
+        "2": {
           dataCheck: "/^(-?d+)(.d+)?$/",
-          checkTip: "请输入小数",
+          checkTip: "小数数据",
           regExp: /^(-?d+)(.d+)?$/,
         },
-        3: {
+        "3": {
           dataCheck: "/^1[3456789]d{9}$/",
-          checkTip: "请输入手机号码",
+          checkTip: "手机号码数据",
           regExp: /^1[3456789]d{9}$/,
         },
-        4: {
+        "4": {
           dataCheck: "/^w+([-+.]w+)*@w+([-.]w+)*.w+([-.]w+)*$/",
-          checkTip: "请输入电子邮箱",
+          checkTip: "电子邮箱数据",
           regExp: /^w+([-+.]w+)*@w+([-.]w+)*.w+([-.]w+)*$/,
         },
       },
       dynamicForm: {},
       proForm: {
+        linePosition:"",
+        lableWidth:"",
+        checkBox:"",
+        expand:"",
+        query:"",
+        valueDataType:"",
+        dataStartValue:"",
+        dataEndValue:"",
+        dataLength:"",
+        dataScale:"",
+        dataCheck:"",
+        checkTip:"",
+        dataSource:"",
+        dyncReqeustWay:"",
+        dyncParam:"",
+        dyncDataSource:"",
+        dyncParam: "{}",
+        dyncReqeustWay: "GET",
+      },
+      compAttr: {
+        linePosition:"",
+        lableWidth:"",
+        checkBox:"",
+        expand:"",
+        query:"",
+        valueDataType:"",
+        dataStartValue:"",
+        dataEndValue:"",
+        dataLength:"20",
+        dataScale:"2",
+        dataCheck:"",
+        checkTip:"",
+        dataSource:"",
+        dyncReqeustWay:"",
+        dyncParam:"",
+        dyncDataSource:"",
         dyncParam: "{}",
         dyncReqeustWay: "GET",
       },
@@ -732,14 +842,14 @@ export default {
           text: "复选框",
           icon: "iconfont icon-fuxuankuang",
           iconSize: 21,
-          style: "border: 1px solid #FFFFF",
+          selectedStyle: "border: 1px solid #FFFFF",
         },
         {
           name: "input",
           text: "输入框",
           icon: "iconfont icon-icon_danhangshurukuang",
           iconSize: 21,
-          style: "border: 1px solid #FFFFF",
+          selectedStyle: "border: 1px solid #FFFFF",
         },
         {
           name: "textarea",
@@ -992,6 +1102,17 @@ export default {
         needLabel: true,
         delStatus: "none",
       },
+       dateTimePicker: {
+        code: "dateTimePicker",
+        name: "dateTimePicker",
+        width: "100px",
+        type: "dateTimePicker",
+        tip: "输入信息",
+        span: 12,
+        dataType: "dateTimePicker",
+        needLabel: true,
+        delStatus: "none",
+      },
       rate: {
         code: "rate",
         name: "rate",
@@ -1226,6 +1347,10 @@ export default {
       _this.nameNumber[this.dropType]++;
       addComp.needLabel = addComp.needLabel && !addComp.empty;
 
+      Object.assign(addComp,_this.compAttr);
+      Object.assign(addComp,_this.regex[0]);
+      addComp.tip = addComp.checkTip;
+
       line.fieldList.push(addComp);
       if (this.dropType == "checkBox") {
         _this.dynamicForm[addComp.code] = [];
@@ -1336,13 +1461,26 @@ export default {
       console.log(data);
     },
     comMouseMove(field) {
-      console.log(field.delStatus);
-      field.delStatus = "block";
-      field.selectedStyle="border: 1px solid #97c5f5;";
+
+      field.delStatus = "inline-block";
+      field.selectedStyle="border: 1px solid #97c5f5;padding-top:2px;padding-bottom:2px;";
+      if(field.type=="checkBox"){
+        this.$refs[field.code+"_border"][0].style="border: 1px solid #97c5f5;padding-top:2px;padding-bottom:2px";
+        this.$refs[field.code+"_del"][0].style="font-size: 15px;position:absolute;right:-1px;top:-11px;color:red;display:inline-block";
+      }else if(field.type=="tree" || field.type=="table"){
+      field.selectedStyle="border: 1px solid #97c5f5;padding-top:2px;padding-bottom:2px;position:relative;";
+
+      }
+
     },
     comMouseLeave(field) {
-      field.delStatus = "none";
-      field.selectedStyle="";
+     field.delStatus = "none";
+     field.selectedStyle="";
+
+      if(field.type=="checkBox"){
+        this.$refs[field.code+"_border"][0].style="border: 0px solid #97c5f5;padding-top:2px;padding-bottom:2px";
+        this.$refs[field.code+"_del"][0].style="font-size: 15px;position:absolute;right:-1px;top:-11px;color:red;display:none";
+      }
 
     },
     delComponent(line, findex) {
@@ -1357,7 +1495,10 @@ export default {
       let _this = this;
       // debugger;
       _this.drawerVisible = true;
+      //Object.assign(field,_this.proForm);
       _this.proForm = field;
+      _this.proForm.valueDataType = 0;
+      _this.dataTypeChange(0);
       _this.currentField = field;
       _this.currentLine = line;
       //将当前的组件的基本属性 赋值
@@ -1366,7 +1507,7 @@ export default {
     drawerClose() {
       let _this = this;
       _this.drawerVisible = false;
-      // _this.dataRequireChange(_this.currentField.dataRequired);
+      _this.dataRequireChange(_this.proForm);
       if (_this.currentField.dataCheck) {
         _this.rules[_this.currentField.code][0].validator = (
           rule,
@@ -1376,11 +1517,16 @@ export default {
           if (value) {
             let pattern = _this.regex[_this.currentField.dataType].regExp;
             if (!pattern.test(value)) {
-              callback(new Error("校验规则不通过"));
+              callback(new Error(_this.currentField.checkTip));
             }
           }
           callback();
         };
+        if(_this.currentField.dataType == 'text' || _this.currentField.dataType == 'textarea'){
+            _this.rules[_this.currentField.code][0].trigger = "blur";
+        }else{
+           _this.rules[_this.currentField.code][0].trigger = "change";
+        }
       }
     },
     positionForward(field) {
@@ -1403,7 +1549,7 @@ export default {
       currentField.linePosition++;
       afterField.linePosition--;
     },
-    dataRequireChange(val) {
+    dataRequireChange(proForm) {
       let _this = this;
       if (_this.rules[_this.currentField.code]) {
         _this.rules[_this.currentField.code][0].required = val;
@@ -1422,17 +1568,36 @@ export default {
         _this.rules[_this.currentField.code][0].required = val;
       } else {
       }
+      _this.dataTypeChange(_this.proForm.valueDataType);
     },
-    dataTypeChange(val) {
+    dataTypeChange(newValue) {
       let _this = this;
       //debugger;
-      let regex = _this.regex[val];
+      let regex = _this.regex[newValue];
       if (regex) {
         _this.proForm.dataCheck = regex.dataCheck;
+
+        let range = "";
+        if(_this.proForm.dataStartValue && _this.proForm.dataEndValue){
+            range = ",范围："+_this.proForm.dataStartValue+"-"+_this.proForm.dataEndValue;
+        }else if(_this.proForm.dataStartValue && ! _this.proForm.dataEndValue){
+            range = ",范围：大于"+_this.proForm.dataStartValue;
+        }else if(!_this.proForm.dataStartValue &&  _this.proForm.dataEndValue){
+            range = ",范围：小于"+_this.proForm.dataStartValue;
+        }
+        let required = _this.proForm.dataRequired?":必填":":非必填";
+        
+        let scale = _this.proForm.dataScale?"精度位："+_this.proForm.dataScale:"";
+
         _this.proForm.checkTip =
           regex.checkTip +
-          "长度：" +
-          (!_this.proForm.dataLength ? "未定义" : _this.proForm.dataLength);
+          required +
+          ",长度：" +
+          (!_this.proForm.dataLength ? "20" : _this.proForm.dataLength)+
+          range+
+          scale;
+          
+        _this.proForm.tip = _this.proForm.checkTip;
       }
     },
     handleChangeData(proForm) {
@@ -1498,11 +1663,6 @@ export default {
           });
       }
     },
-    // test(field) {
-    //  console.log(field.dataRequired);
-    //  let  _this = this;
-    //  _this.dataRequireChange(field.dataRequired);
-    // },
     buildRule(item) {
       let _this = this;
       if (!item) {
@@ -1569,6 +1729,11 @@ export default {
 </script>
 
 <style scoped>
+.el-form-item__content >>> .del-border{
+  border: 1px solid #97c5f5;
+  padding-top:2px;
+  padding-bottom:2px
+}
 .el-row {
   margin-bottom: 0px;
 }
