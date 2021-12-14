@@ -90,7 +90,7 @@
           </el-row>
         </el-header>
         <el-main
-          style="height: 69vh; padding: 0px"
+          style="height: 69vh; padding: 0px;line-height:60px"
           @dragover.prevent.native
           @drop.native="mainDrop($event)"
         >
@@ -404,7 +404,7 @@
                       ></i> -->
                         <i
                         class="iconfont icon-ziyuan"
-                        :style="`font-size: 15px;position:absolute;right:-1px;top:-70px;color:red;display:${field.delStatus}`"
+                        :style="`font-size: 15px;position:absolute;right:-1px;top:-20px;color:red;display:${field.delStatus}`"
                         @click="delComponent(line, findex)"
                         :ref="`${field.code}_del`"
                       ></i>
