@@ -168,6 +168,8 @@
                         v-if="field.type == 'select'"
                         v-model="dynamicForm[field.code]"
                         placeholder="field.tip"
+                        :multiple="field.checkBox"
+                        clearable
                         :style="`width:${field.compWidth}%`"
                         @dblclick.native="editCompPro(field, line)"
                       >
@@ -257,9 +259,9 @@
                       <el-date-picker
                         v-if="
                           field.type == 'dateTimePicker' &&
-                          field.dataType == 'datetimerange'
+                          field.dataType == 'dateTimePicker'
                         "
-                        is-range
+                        :is-range="field.dataType == '' "
                         v-model="dynamicForm[field.code]"
                         range-separator="至"
                         start-placeholder="开始时间"
@@ -500,13 +502,13 @@
               placeholder="PX"
             ></el-input-number>
           </el-form-item>
-          <el-form-item label="复选框" label-width="80px">
-            <el-switch v-model="proForm.checkBox"> </el-switch>
+          <el-form-item  v-if="proForm.type=='tree' || proForm.type=='select'"  label="支持多选" label-width="80px">
+            <el-switch v-model="proForm.checkBox" @change="multipleChange"> </el-switch>
           </el-form-item>
-           <el-form-item label="是否展开" label-width="80px" >
+           <el-form-item  v-if="proForm.type=='tree'" label="是否展开" label-width="80px" >
             <el-switch v-model="proForm.expand"> </el-switch>
           </el-form-item>
-          <el-form-item label="搜索框" label-width="80px" >
+          <el-form-item v-if="proForm.type=='tree'"  label="搜索框" label-width="80px" >
             <el-switch v-model="proForm.query"> </el-switch>
           </el-form-item>
           <div
@@ -671,7 +673,6 @@
               v-model="proForm.dataSource"
               type="textarea"
               style="width: 270px"
-              @blur="handleChangeData(proForm)"
             ></el-input>
           </el-form-item>
           
@@ -772,6 +773,7 @@ export default {
         dyncDataSource:"",
         dyncParam: "{}",
         dyncReqeustWay: "GET",
+        multiple:false
       },
       compAttr: {
         linePosition:"",
@@ -1085,7 +1087,7 @@ export default {
         name: "datePicker",
         width: "100px",
         type: "datePicker",
-        dataType: "daterange",
+        dataType: "datePicker",
         tip: "输入信息",
         span: 12,
         needLabel: true,
@@ -1098,7 +1100,7 @@ export default {
         type: "timePicker",
         tip: "输入信息",
         span: 12,
-        dataType: "timerange",
+        dataType: "timePicker",
         needLabel: true,
         delStatus: "none",
       },
@@ -1463,12 +1465,12 @@ export default {
     comMouseMove(field) {
 
       field.delStatus = "inline-block";
-      field.selectedStyle="border: 1px solid #97c5f5;padding-top:2px;padding-bottom:2px;";
+      field.selectedStyle="border: 0.5px solid rgb(209 219 229);box-shadow: 2px 2px 4px rgba(0, 0, 0, .12), 2px 2px 6px rgba(0, 0, 0, .04);padding-top:2px;padding-bottom:2px;";
       if(field.type=="checkBox"){
         this.$refs[field.code+"_border"][0].style="border: 1px solid #97c5f5;padding-top:2px;padding-bottom:2px";
         this.$refs[field.code+"_del"][0].style="font-size: 15px;position:absolute;right:-1px;top:-11px;color:red;display:inline-block";
       }else if(field.type=="tree" || field.type=="table"){
-      field.selectedStyle="border: 1px solid #97c5f5;padding-top:2px;padding-bottom:2px;position:relative;";
+      field.selectedStyle="border: 0.5px solid rgb(209 219 229);box-shadow: 2px 2px 4px rgba(0, 0, 0, .12), 2px 2px 6px rgba(0, 0, 0, .04);padding-top:2px;padding-bottom:2px;position:relative;";
 
       }
 
@@ -1507,7 +1509,7 @@ export default {
     drawerClose() {
       let _this = this;
       _this.drawerVisible = false;
-      _this.dataRequireChange(_this.proForm);
+      //_this.dataRequireChange(_this.proForm);
       if (_this.currentField.dataCheck) {
         _this.rules[_this.currentField.code][0].validator = (
           rule,
@@ -1528,6 +1530,7 @@ export default {
            _this.rules[_this.currentField.code][0].trigger = "change";
         }
       }
+      _this.handleChangeData(_this.proForm);
     },
     positionForward(field) {
       let _this = this;
@@ -1549,7 +1552,7 @@ export default {
       currentField.linePosition++;
       afterField.linePosition--;
     },
-    dataRequireChange(proForm) {
+    dataRequireChange(val) {
       let _this = this;
       if (_this.rules[_this.currentField.code]) {
         _this.rules[_this.currentField.code][0].required = val;
@@ -1600,12 +1603,28 @@ export default {
         _this.proForm.tip = _this.proForm.checkTip;
       }
     },
+    multipleChange(newValue){
+      let _this = this;
+      let proForm = this.proForm;
+     if(proForm && proForm.type === "select"){
+        const value = proForm.checkBox ? [] : '';
+        let select = _this.$refs[proForm.code][0].$children[1];
+        select.$emit('input',value);
+        select.emitChange(value);
+        select.visible = false;
+        select.$emit('clear');
+     }
+    },
     handleChangeData(proForm) {
-      debugger;
+     // debugger;
       let _this = this;
       if (proForm && proForm.type === "tree") {
         _this.loadNode(proForm.dataSource);
-      } else {
+      } else if(proForm && proForm.type === "select"){
+        proForm.data = JSON.parse(proForm.dataSource);
+      }else if(proForm && proForm.type === "table"){
+          proForm.data = proForm.dataSource;
+      }else{
         _this.dynamicForm[proForm.code] = proForm.dataSource;
       }
     },
