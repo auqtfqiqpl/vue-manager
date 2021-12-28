@@ -6,9 +6,79 @@
   "description": "",
   "glyphs": [
     {
+      "icon_id": "1270",
+      "name": "错误",
+      "font_class": "cancel",
+      "unicode": "e600",
+      "unicode_decimal": 58880
+    },
+    {
+      "icon_id": "166654",
+      "name": "修改",
+      "font_class": "edit",
+      "unicode": "e645",
+      "unicode_decimal": 58949
+    },
+    {
+      "icon_id": "2076383",
+      "name": "表单控件 删除",
+      "font_class": "cancel1",
+      "unicode": "e8c1",
+      "unicode_decimal": 59585
+    },
+    {
+      "icon_id": "5041108",
+      "name": "修改",
+      "font_class": "edit1",
+      "unicode": "e7cd",
+      "unicode_decimal": 59341
+    },
+    {
+      "icon_id": "23880815",
+      "name": "通知公告",
+      "font_class": "tongzhigonggao",
+      "unicode": "e610",
+      "unicode_decimal": 58896
+    },
+    {
+      "icon_id": "2237650",
+      "name": "停止",
+      "font_class": "tingzhi",
+      "unicode": "e609",
+      "unicode_decimal": 58889
+    },
+    {
+      "icon_id": "4845694",
+      "name": "开始-default",
+      "font_class": "kaishi-default",
+      "unicode": "e614",
+      "unicode_decimal": 58900
+    },
+    {
+      "icon_id": "16438985",
+      "name": "开始",
+      "font_class": "kaishi1",
+      "unicode": "e6da",
+      "unicode_decimal": 59098
+    },
+    {
+      "icon_id": "17581178",
+      "name": "停止",
+      "font_class": "tingzhi1",
+      "unicode": "ec31",
+      "unicode_decimal": 60465
+    },
+    {
+      "icon_id": "17581788",
+      "name": "停止",
+      "font_class": "tingzhi2",
+      "unicode": "ec6d",
+      "unicode_decimal": 60525
+    },
+    {
       "icon_id": "10502043",
       "name": "删除",
-      "font_class": "ziyuan",
+      "font_class": "del",
       "unicode": "e6a5",
       "unicode_decimal": 59045
     },

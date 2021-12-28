@@ -141,7 +141,6 @@
                         v-model="dynamicForm[field.code]"
                         :placeholder="field.tip"
                         :maxlength="field.dataLength"
-                        @dblclick.native="editCompPro(field, line)"
                         :style="`width:${field.compWidth}%`"
                         show-word-limit
                       >
@@ -153,7 +152,6 @@
                         placeholder="field.tip"
                         :maxlength="field.dataLength"
                         :style="`width:${field.compWidth}%`"
-                        @dblclick.native="editCompPro(field, line)"
                         show-word-limit
                       ></el-input>
                       <el-input-number
@@ -161,17 +159,15 @@
                         v-model="dynamicForm[field.code]"
                         :step="field.step"
                         :style="`width:${field.compWidth}%`"
-                        @dblclick.native="editCompPro(field, line)"
                       ></el-input-number>
 
                       <el-select
                         v-if="field.type == 'select'"
                         v-model="dynamicForm[field.code]"
-                        placeholder="field.tip"
-                        :multiple="field.checkBox"
+                        :placeholder="field.tip"
+                        :multiple="field.compMultiple"
                         clearable
                         :style="`width:${field.compWidth}%`"
-                        @dblclick.native="editCompPro(field, line)"
                       >
                         <el-option
                           v-for="item in field.data"
@@ -187,115 +183,54 @@
                         :options="field.data"
                         @change="handleChange($event, field)"
                         :style="`width:${field.compWidth}%`"
-                        @dblclick.native="editCompPro(field, line)"
                       ></el-cascader>
                       <el-switch
                         v-if="field.type == 'switch'"
                         v-model="dynamicForm[field.code]"
                         :style="`width:${field.compWidth}%`"
-                        @dblclick.native="editCompPro(field, line)"
                       ></el-switch>
                       <el-slider
                         v-if="field.type == 'slider'"
                         v-model="dynamicForm[field.code]"
                         :style="`width:${field.compWidth}%`"
-                        @dblclick.native="editCompPro(field, line)"
                       ></el-slider>
 
                       <el-date-picker
                         v-if="
-                          field.type == 'datePicker' && field.dataType == 'date'
-                        "
+                          field.type == 'datePicker' ||  field.type == 'dateTimePicker'
+                    "
                         :type="field.dataType"
                         v-model="dynamicForm[field.code]"
-                        placeholder="field.tip"
-                        :style="`width:${field.compWidth}%`"
-                        @dblclick.native="editCompPro(field, line)"
-                      ></el-date-picker>
-
-                      <el-date-picker
-                        v-if="
-                          field.type == 'datePicker' &&
-                          field.dataType.indexOf('range') > -1
-                        "
-                        v-model="dynamicForm[field.code]"
-                        :type="field.dataType"
+                        :placeholder="field.tip"
                         range-separator="至"
                         start-placeholder="开始日期"
                         end-placeholder="结束日期"
                         :style="`width:${field.compWidth}%`"
-                        @dblclick.native="editCompPro(field, line)"
-                      >
-                      </el-date-picker>
+                      ></el-date-picker>
 
-                      <el-time-picker
-                        v-if="
-                          field.type == 'timePicker' && field.dataType == 'time'
-                        "
-                        v-model="dynamicForm[field.code]"
-                        :picker-options="{
-                          selectableRange: '18:30:00 - 20:30:00',
-                        }"
-                        placeholder="任意时间点"
-                        :style="`width:${field.compWidth}%`"
-                        @dblclick.native="editCompPro(field, line)"
-                      >
-                      </el-time-picker>
                        <el-time-picker
                         v-if="
-                          field.type == 'timePicker' &&   field.dataType.indexOf('range') > -1"
+                          field.type == 'timePicker'"
                         v-model="dynamicForm[field.code]"
-                        :picker-options="{
-                          selectableRange: '18:30:00 - 20:30:00',
-                        }"
+                        :is-range="field.dataType.indexOf('range') > -1"
                         range-separator="至"
                         placeholder="任意时间点"
                         start-placeholder="开始时间"
                         end-placeholder="结束时间"
                         :style="`width:${field.compWidth}%`"
-                        @dblclick.native="editCompPro(field, line)"
                       >
                       </el-time-picker>
-                      <el-date-picker
-                        v-if="
-                          field.type == 'dateTimePicker' &&
-                          field.dataType == 'dateTimePicker'
-                        "
-                        :is-range="field.dataType == '' "
-                        v-model="dynamicForm[field.code]"
-                        range-separator="至"
-                        start-placeholder="开始时间"
-                        end-placeholder="结束时间"
-                        placeholder="选择时间范围"
-                        :style="`width:${field.compWidth}%`"
-                        @dblclick.native="editCompPro(field, line)"
-                      >
-                      </el-date-picker>
-                        <el-date-picker
-                        v-if="
-                          field.type == 'dateTimePicker' 
-                          &&   field.dataType.indexOf('range') > -1"
-                        is-range
-                        v-model="dynamicForm[field.code]"
-                        range-separator="至"
-                        start-placeholder="开始日期时间"
-                        end-placeholder="结束日期时间"
-                        placeholder="选择日期时间范围"
-                        :style="`width:${field.compWidth}%`"
-                        @dblclick.native="editCompPro(field, line)"
-                      >
-                      </el-date-picker>
+                     
+                        
                       <el-switch
                         v-if="field.type == 'switch'"
                         v-model="dynamicForm[field.code]"
                         :style="`width:${field.compWidth}%`"
-                        @dblclick.native="editCompPro(field, line)"
                       ></el-switch>
                       <el-radio-group
                         v-if="field.type == 'radio'"
                         v-model="dynamicForm[field.code]"
                         :style="`width:${field.compWidth}%`"
-                        @dblclick.native="editCompPro(field, line)"
                       >
                         <el-radio
                           v-for="(radio, aindex) in field.data"
@@ -309,7 +244,6 @@
                         v-if="field.type == 'checkBox'"
                         v-model="dynamicForm[field.code]"
                         :style="`width:${field.compWidth}%`"
-                        @dblclick.native="editCompPro(field, line)"
                       >
                         <el-checkbox
                           v-for="(box, aindex) in field.data"
@@ -326,7 +260,6 @@
                         action="https://jsonplaceholder.typicode.com/posts/"
                         multiple
                         :style="`width:${field.compWidth}%`"
-                        @dblclick.native="editCompPro(field, line)"
                       >
                         <i class="el-icon-upload"></i>
                         <div class="el-upload__text">
@@ -340,14 +273,22 @@
                         v-if="field.type == 'rate'"
                         v-model="dynamicForm[field.code]"
                         :style="`width:${field.compWidth}%`"
-                        @dblclick.native="editCompPro(field, line)"
                       ></el-rate>
                       <i
-                        class="iconfont icon-ziyuan"
-                        :style="`font-size: 15px;position:absolute;right:-1px;top:-11px;color:red;display:${field.delStatus}`"
+                        :class="`iconfont icon-edit edit-icon ${field.editIconStatus} `"
+                        @click="editComponent(field,line)"
+                        @mousemove="comOptMouseMove(field,'edit')"
+                        @mouseleave="comOptMouseLeave(field,'edit')"
+                        :ref="`${field.code}_edit`"
+                      ></i>
+                      <i
+                        :class="`iconfont icon-cancel1 del-icon ${field.delIconStatus}`"
                         @click="delComponent(line, findex)"
+                        @mousemove="comOptMouseMove(field,'del')"
+                        @mouseleave="comOptMouseLeave(field,'del')" 
                         :ref="`${field.code}_del`"
                       ></i>
+                      
                     </div>
                   </el-form-item>
                    <div
@@ -370,7 +311,6 @@
                     default-expand-all
                     :style="`width:${field.compWidth}%`"
                     :ref="field.code"
-                    @dblclick.native="editCompPro(field, line)"
                     @check-change="handleCheckChange"
                   >
                   </el-tree>
@@ -387,8 +327,7 @@
                     :load="loadNode"
                     :data="[{name:'root'}]"
                     lazy
-                    :show-checkbox="field.checkBox"
-                    @dblclick.native="editCompPro(field, line)"
+                    :show-checkbox="field.compMultiple"
                     @check-change="handleCheckChange"
                     :style="`width:${field.compWidth}%`"
                     :ref="field.code"
@@ -397,17 +336,24 @@
                   <table-view
                     v-if="field.type == 'table'"
                     :table="field"
-                    @dblclick.native="editCompPro(field, line)"
                   ></table-view>
                     <!-- <i
                         class="iconfont icon-ziyuan"
                         :style="`font-size: 15px;position:absolute;right:-1px;top:-15px;color:red;display:${field.delStatus}`"
                         @click="delComponent(line, findex)"
                       ></i> -->
+                       <i
+                        :class="`iconfont icon-edit edit-icon ${field.editIconStatus} `"
+                        @click="editComponent(field, line)"
+                        @mousemove="comOptMouseMove(field,'edit')"
+                        @mouseleave="comOptMouseLeave(field,'edit')" 
+                        :ref="`${field.code}_edit`"
+                      ></i>
                         <i
-                        class="iconfont icon-ziyuan"
-                        :style="`font-size: 15px;position:absolute;right:-1px;top:-20px;color:red;display:${field.delStatus}`"
+                        :class="`iconfont icon-cancel1 del-icon ${field.delIconStatus}`"
                         @click="delComponent(line, findex)"
+                        @mousemove="comOptMouseMove(field,'del')"
+                        @mouseleave="comOptMouseLeave(field,'del')" 
                         :ref="`${field.code}_del`"
                       ></i>
                     </div>
@@ -453,7 +399,7 @@
           </el-form-item>
           <el-form-item label="行间宽度" label-width="80px">
             <el-slider
-              v-model="proForm.span"
+              v-model="proForm.compSpan"
               :max="24"
               style="padding-left: 40px; width: 200px"
             >
@@ -462,7 +408,7 @@
           <el-form-item label="行间位置" label-width="80px">
             <el-col :span="6" :offset="4"
               ><el-input
-                v-model="proForm.linePosition"
+                v-model="proForm.compLinePosition"
                 style="width: 50px; display: block"
                 placeholder="PX"
               ></el-input
@@ -479,11 +425,11 @@
             >
           </el-form-item>
           <el-form-item label="显示标题" label-width="80px">
-            <el-switch v-model="proForm.needLabel"> </el-switch>
+            <el-switch v-model="proForm.compNeedLabel"> </el-switch>
           </el-form-item>
           <el-form-item label="标题宽度(PX)" label-width="80px">
             <el-input-number
-              v-model="proForm.lableWidth"
+              v-model="proForm.compLableWidth"
               :min="1"
               :max="2000"
               style="width: 270px"
@@ -503,13 +449,13 @@
             ></el-input-number>
           </el-form-item>
           <el-form-item  v-if="proForm.type=='tree' || proForm.type=='select'"  label="支持多选" label-width="80px">
-            <el-switch v-model="proForm.checkBox" @change="multipleChange"> </el-switch>
+            <el-switch v-model="proForm.compMultiple" @change="multipleChange"> </el-switch>
           </el-form-item>
            <el-form-item  v-if="proForm.type=='tree'" label="是否展开" label-width="80px" >
-            <el-switch v-model="proForm.expand"> </el-switch>
+            <el-switch v-model="proForm.compExpand"> </el-switch>
           </el-form-item>
           <el-form-item v-if="proForm.type=='tree'"  label="搜索框" label-width="80px" >
-            <el-switch v-model="proForm.query"> </el-switch>
+            <el-switch v-model="proForm.compQuery"> </el-switch>
           </el-form-item>
           <div
             style="
@@ -531,16 +477,30 @@
               <el-radio :label="true">必填</el-radio>
             </el-radio-group>
           </el-form-item>
+          
           <el-form-item label="数据类型" label-width="80px">
-            <el-radio-group v-model="proForm.valueDataType" @change="dataTypeChange">
+            
+            <el-radio-group  v-if="proForm.type == 'text' || proForm.type=='textarea'" v-model="proForm.valueDataType" @change="dataTypeChange">
               <el-radio :label="0">文本</el-radio>
-              <el-radio :label="1">整数</el-radio>
+              <el-radio  :label="1">整数</el-radio>
               <el-radio :label="2">小数</el-radio>
               <el-radio :label="3">手机号码</el-radio>
               <el-radio :label="4">E-MAIL</el-radio>
             </el-radio-group>
+            <el-radio-group  v-if="proForm.type == 'datePicker' || proForm.type == 'dateTimePicker' " v-model="proForm.dataType" @change="dateDataTypeChange">
+              <el-radio label="year" border>按年</el-radio>
+              <el-radio label="month" border>按月</el-radio>
+              <el-radio label="week" border>按周</el-radio>
+              <el-radio label="date" border>日期</el-radio>
+              <el-radio label="datetime" border>日期时间</el-radio>
+              <el-radio label="datetimerange" border>起止日期时间</el-radio>
+              <el-radio label="daterange" border>起止日期</el-radio>
+              <el-radio label="monthrange" border>起止月份</el-radio>
+              <el-radio label="dates" border>多选日期</el-radio>
+            </el-radio-group>
           </el-form-item>
-          <el-form-item label="数据长度" label-width="80px">
+          <div v-if="proForm.type == 'text' || proForm.type=='textarea'" >
+          <el-form-item  label="数据长度" label-width="80px">
             <el-input
               v-model="proForm.dataLength"
               :min="1"
@@ -583,11 +543,12 @@
           </el-form-item>
           <el-form-item label="校验提示" label-width="80px">
             <el-input
-              v-model="proForm.checkTip"
+              v-model="proForm.dataCheckTip"
               autocomplete="off"
               style="width: 270px"
             ></el-input>
           </el-form-item>
+          </div>
           
           <div v-if="proForm.type == tree"
             style="
@@ -678,7 +639,7 @@
           
           <el-form-item label="动态数据" label-width="80px">
             <el-select
-              v-model="proForm.dyncReqeustWay"
+              v-model="proForm.dataReqeustWay"
               placeholder="请选择"
               style="width: 90px"
             >
@@ -687,12 +648,12 @@
             </el-select>
 
             <el-input
-              v-model="proForm.dyncParam"
+              v-model="proForm.dataRequestParam"
               style="width: 180px"
               placeholder="参数"
             ></el-input>
             <el-input
-              v-model="proForm.dyncDataSource"
+              v-model="proForm.dataRequestSource"
               style="width: 210px"
               placeholder="请求路径"
             ></el-input>
@@ -755,45 +716,44 @@ export default {
       },
       dynamicForm: {},
       proForm: {
-        linePosition:"",
-        lableWidth:"",
-        checkBox:"",
-        expand:"",
-        query:"",
+        compLinePosition:"",
+        compLableWidth:"",
+        compMultiple:false,
+        compExpand:"",
+        compQuery:"",
         valueDataType:"",
         dataStartValue:"",
         dataEndValue:"",
         dataLength:"",
         dataScale:"",
         dataCheck:"",
-        checkTip:"",
+        dataCheckTip:"",
         dataSource:"",
-        dyncReqeustWay:"",
-        dyncParam:"",
-        dyncDataSource:"",
-        dyncParam: "{}",
-        dyncReqeustWay: "GET",
-        multiple:false
+        dataReqeustWay:"",
+        dataRequestParam:"GET",
+        dataRequestSource:"",
+        dataRequired:false
+
       },
       compAttr: {
-        linePosition:"",
-        lableWidth:"",
-        checkBox:"",
-        expand:"",
-        query:"",
+        compLinePosition:"",
+        compLableWidth:"",
+        compMultiple:false,
+        compExpand:"",
+        compQuery:"",
         valueDataType:"",
         dataStartValue:"",
         dataEndValue:"",
-        dataLength:"20",
-        dataScale:"2",
+        dataLength:"",
+        dataScale:"",
         dataCheck:"",
-        checkTip:"",
+        dataCheckTip:"",
         dataSource:"",
-        dyncReqeustWay:"",
-        dyncParam:"",
-        dyncDataSource:"",
-        dyncParam: "{}",
-        dyncReqeustWay: "GET",
+        dataReqeustWay:"",
+        dataRequestParam:"GET",
+        dataRequestSource:"",
+        dataRequired:false
+
       },
       rules: {},
       dropType: "",
@@ -985,7 +945,8 @@ export default {
         tip: "输入信息",
         span: 12,
         needLabel: true,
-        delStatus: "none",
+        delIconStatus: "del-icon-hide",
+        editIconStatus: "edit-icon-hide",
         drawer: false,
         direction: "rtl",
         dataRequired: false,
@@ -999,7 +960,8 @@ export default {
         tip: "输入信息",
         span: 12,
         needLabel: true,
-        delStatus: "none",
+        delIconStatus: "del-icon-hide",
+editIconStatus: "edit-icon-hide",
         drawer: false,
         direction: "rtl",
         compWidth:'60'
@@ -1012,9 +974,11 @@ export default {
         tip: "输入信息",
         span: 12,
         needLabel: true,
-        delStatus: "none",
+        delIconStatus: "del-icon-hide",
+editIconStatus: "edit-icon-hide",
         drawer: false,
         direction: "rtl",
+        dataRequired:false
       },
       radio: {
         code: "radio",
@@ -1024,7 +988,8 @@ export default {
         tip: "输入信息",
         span: 12,
         needLabel: true,
-        delStatus: "none",
+        delIconStatus: "del-icon-hide",
+editIconStatus: "edit-icon-hide",
         drawer: false,
         direction: "rtl",
         data: [
@@ -1060,7 +1025,8 @@ export default {
         tip: "输入信息",
         span: 12,
         needLabel: true,
-        delStatus: "none",
+        delIconStatus: "del-icon-hide",
+editIconStatus: "edit-icon-hide",
         drawer: false,
         direction: "rtl",
       },
@@ -1072,7 +1038,8 @@ export default {
         tip: "输入信息",
         span: 12,
         needLabel: true,
-        delStatus: "none",
+        delIconStatus: "del-icon-hide",
+editIconStatus: "edit-icon-hide",
         drawer: false,
         direction: "rtl",
         data: [
@@ -1087,11 +1054,12 @@ export default {
         name: "datePicker",
         width: "100px",
         type: "datePicker",
-        dataType: "datePicker",
+        dataType: "date",
         tip: "输入信息",
         span: 12,
         needLabel: true,
-        delStatus: "none",
+        delIconStatus: "del-icon-hide",
+editIconStatus: "edit-icon-hide",
       },
       timePicker: {
         code: "timePicker",
@@ -1102,7 +1070,8 @@ export default {
         span: 12,
         dataType: "timePicker",
         needLabel: true,
-        delStatus: "none",
+        delIconStatus: "del-icon-hide",
+editIconStatus: "edit-icon-hide",
       },
        dateTimePicker: {
         code: "dateTimePicker",
@@ -1111,9 +1080,10 @@ export default {
         type: "dateTimePicker",
         tip: "输入信息",
         span: 12,
-        dataType: "dateTimePicker",
+        dataType: "datetime",
         needLabel: true,
-        delStatus: "none",
+        delIconStatus: "del-icon-hide",
+editIconStatus: "edit-icon-hide",
       },
       rate: {
         code: "rate",
@@ -1123,7 +1093,8 @@ export default {
         tip: "输入信息",
         span: 12,
         needLabel: true,
-        delStatus: "none",
+        delIconStatus: "del-icon-hide",
+editIconStatus: "edit-icon-hide",
       },
       slider: {
         code: "slider",
@@ -1133,7 +1104,8 @@ export default {
         tip: "输入信息",
         span: 12,
         needLabel: true,
-        delStatus: "none",
+        delIconStatus: "del-icon-hide",
+editIconStatus: "edit-icon-hide",
       },
       upload: {
         code: "upload",
@@ -1143,7 +1115,8 @@ export default {
         tip: "输入信息",
         span: 12,
         needLabel: true,
-        delStatus: "none",
+        delIconStatus: "del-icon-hide",
+editIconStatus: "edit-icon-hide",
       },
       //data组件
       tree: {
@@ -1153,7 +1126,8 @@ export default {
         type: "tree",
         span: 12,
         needLabel: false,
-        delStatus: "none",
+        delIconStatus: "del-icon-hide",
+editIconStatus: "edit-icon-hide",
         props: {
           label: "name",
           children: "children",
@@ -1209,7 +1183,8 @@ export default {
         type: "lazyTree",
         span: 12,
         needLabel: false,
-        delStatus: "none",
+        delIconStatus: "del-icon-hide",
+editIconStatus: "edit-icon-hide",
         props: {
           label: "name",
           children: "children",
@@ -1229,7 +1204,7 @@ export default {
         type: "table",
         span: 24,
         needLabel: false,
-        delStatus: "none",
+        delIconStatus: "del-icon-hide",
         data: [],
         config: {
           orderKey: "id",
@@ -1357,7 +1332,7 @@ export default {
       if (this.dropType == "checkBox") {
         _this.dynamicForm[addComp.code] = [];
       }
-      _this.buildRule(addComp);
+      //_this.buildRule(addComp);
       console.log(this.dropType);
     },
     handleChange(_event, data) {},
@@ -1463,27 +1438,57 @@ export default {
       console.log(data);
     },
     comMouseMove(field) {
+      if(field.delIconStatus != 'del-icon-on'){
+        field.delIconStatus = "del-icon-show";
 
-      field.delStatus = "inline-block";
+      }
+            if(field.editIconStatus != 'edit-icon-on'){
+                    field.editIconStatus = "edit-icon-show";
+
+            }
       field.selectedStyle="border: 0.5px solid rgb(209 219 229);box-shadow: 2px 2px 4px rgba(0, 0, 0, .12), 2px 2px 6px rgba(0, 0, 0, .04);padding-top:2px;padding-bottom:2px;";
       if(field.type=="checkBox"){
         this.$refs[field.code+"_border"][0].style="border: 1px solid #97c5f5;padding-top:2px;padding-bottom:2px";
-        this.$refs[field.code+"_del"][0].style="font-size: 15px;position:absolute;right:-1px;top:-11px;color:red;display:inline-block";
+       // this.$refs[field.code+"_del"][0].style="font-size: 15px;position:absolute;right:-1px;top:-11px;color:red;display:inline-block";
       }else if(field.type=="tree" || field.type=="table"){
-      field.selectedStyle="border: 0.5px solid rgb(209 219 229);box-shadow: 2px 2px 4px rgba(0, 0, 0, .12), 2px 2px 6px rgba(0, 0, 0, .04);padding-top:2px;padding-bottom:2px;position:relative;";
+        field.selectedStyle="border: 0.5px solid rgb(209 219 229);box-shadow: 2px 2px 4px rgba(0, 0, 0, .12), 2px 2px 6px rgba(0, 0, 0, .04);padding-top:2px;padding-bottom:2px;position:relative;";
 
       }
 
     },
     comMouseLeave(field) {
-     field.delStatus = "none";
+     field.delIconStatus = "del-icon-hide";
+     field.editIconStatus = "edit-icon-hide";
+
      field.selectedStyle="";
 
       if(field.type=="checkBox"){
         this.$refs[field.code+"_border"][0].style="border: 0px solid #97c5f5;padding-top:2px;padding-bottom:2px";
-        this.$refs[field.code+"_del"][0].style="font-size: 15px;position:absolute;right:-1px;top:-11px;color:red;display:none";
+      //  this.$refs[field.code+"_del"][0].style="font-size: 15px;position:absolute;right:-1px;top:-11px;color:red;display:none";
       }
 
+    },
+    comOptMouseMove(field,type){
+
+      if('edit' == type){
+    field.editIconStatus = "edit-icon-on";
+
+      }else{
+             field.delIconStatus = "del-icon-on";
+
+      }
+
+    },
+    comOptMouseLeave(field,type){
+
+            if('edit' == type){
+    field.editIconStatus = "edit-icon-show";
+
+            }else{
+          field.delIconStatus = "del-icon-show";
+
+            }
+    
     },
     delComponent(line, findex) {
       line.fieldList.splice(findex, 1);
@@ -1493,9 +1498,10 @@ export default {
         line.emptyTip = "新配置区域";
       }
     },
-    editCompPro(field, line) {
+    editComponent(field, line) {
       let _this = this;
       // debugger;
+
       _this.drawerVisible = true;
       //Object.assign(field,_this.proForm);
       _this.proForm = field;
@@ -1603,11 +1609,15 @@ export default {
         _this.proForm.tip = _this.proForm.checkTip;
       }
     },
+    dateDataTypeChange(newValue){
+        let _this = this;
+       // _this.proForm.type = 
+    },
     multipleChange(newValue){
       let _this = this;
       let proForm = this.proForm;
      if(proForm && proForm.type === "select"){
-        const value = proForm.checkBox ? [] : '';
+        const value = proForm.compMultiple ? [] : '';
         let select = _this.$refs[proForm.code][0].$children[1];
         select.$emit('input',value);
         select.emitChange(value);
@@ -1978,5 +1988,41 @@ tr:first-child {
   padding-top: 0;
   padding-bottom: 0;
   border: 1px dashed rgb(158 156 156);
+}
+
+.del-icon {
+  font-size: 20px;
+  position:absolute;
+  right:-1px;
+  top:-10px;
+}
+.del-icon-show {
+  display:inline-block;
+  color:#8a8a8a;
+
+}
+.del-icon-hide {
+  display:none
+}
+.del-icon-on {
+  color:#d81e06;
+}
+
+.edit-icon {
+  font-size: 20px;
+  position:absolute;
+  right:30px;
+  top:-10px;
+}
+.edit-icon-show {
+  display:inline-block;
+  color:#8a8a8a;
+
+}
+.edit-icon-hide {
+  display:none
+}
+.edit-icon-on {
+  color:#1296db;
 }
 </style>
