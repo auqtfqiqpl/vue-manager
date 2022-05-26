@@ -292,7 +292,7 @@
                     </div>
                   </el-form-item>
                    <div
-                    v-if=" field.type == 'tree' || field.type == 'table'"
+                    v-if=" field.type == 'tree' ||field.type == 'lazyTree'  || field.type == 'table'"
                       @mousemove="comMouseMove(field)"
                       @mouseleave="comMouseLeave(field)"
                       :style="field.selectedStyle"
@@ -1313,7 +1313,7 @@ editIconStatus: "edit-icon-hide",
       }
     },
     addComponet(event, line) {
-      ///debugger
+      //debugger
       let _this = this;
       line.empty = false;
       //let  addComp = _this[this.dropType];
@@ -1439,33 +1439,51 @@ editIconStatus: "edit-icon-hide",
     },
     comMouseMove(field) {
       if(field.delIconStatus != 'del-icon-on'){
-        field.delIconStatus = "del-icon-show";
+        this.$set(field,"delIconStatus", "del-icon-show")
+       // field.delIconStatus = "del-icon-show";
 
       }
-            if(field.editIconStatus != 'edit-icon-on'){
-                    field.editIconStatus = "edit-icon-show";
-
-            }
-      field.selectedStyle="border: 0.5px solid rgb(209 219 229);box-shadow: 2px 2px 4px rgba(0, 0, 0, .12), 2px 2px 6px rgba(0, 0, 0, .04);padding-top:2px;padding-bottom:2px;";
-      if(field.type=="checkBox"){
-        this.$refs[field.code+"_border"][0].style="border: 1px solid #97c5f5;padding-top:2px;padding-bottom:2px";
-       // this.$refs[field.code+"_del"][0].style="font-size: 15px;position:absolute;right:-1px;top:-11px;color:red;display:inline-block";
-      }else if(field.type=="tree" || field.type=="table"){
-        field.selectedStyle="border: 0.5px solid rgb(209 219 229);box-shadow: 2px 2px 4px rgba(0, 0, 0, .12), 2px 2px 6px rgba(0, 0, 0, .04);padding-top:2px;padding-bottom:2px;position:relative;";
+      if(field.editIconStatus != 'edit-icon-on'){
+       //       field.editIconStatus = "edit-icon-show";
+        this.$set(field,"editIconStatus", "edit-icon-show")
 
       }
+      let selectedStyle="border: 0.5px solid rgb(209 219 229);box-shadow: 2px 2px 4px rgba(0, 0, 0, .12), 2px 2px 6px rgba(0, 0, 0, .04);padding-top:2px;padding-bottom:2px;";
+
+    //  if(field.type=="checkBox"){
+    //     this.$refs[field.code+"_border"][0].style=field.selectedStyle;
+    //    // this.$refs[field.code+"_del"][0].style="font-size: 15px;position:absolute;right:-1px;top:-11px;color:red;display:inline-block";
+    //   }else if(field.type=="tree" || field.type=="table" || field.type=="lazyTree" ){
+    //     field.selectedStyle="border: 0.5px solid rgb(209 219 229);box-shadow: 2px 2px 4px rgba(0, 0, 0, .12), 2px 2px 6px rgba(0, 0, 0, .04);padding-top:2px;padding-bottom:2px;position:relative;";
+
+    //   }
+
+    if( field.type=="lazyTree"|| field.type=="tree"){
+      selectedStyle +="position:relative;";
+    }
+    this.$set(field,"selectedStyle", selectedStyle);
+
+      console.log(JSON.stringify(field));
 
     },
     comMouseLeave(field) {
-     field.delIconStatus = "del-icon-hide";
-     field.editIconStatus = "edit-icon-hide";
+    //  field.delIconStatus = "del-icon-hide";
+    //  field.editIconStatus = "edit-icon-hide";
 
-     field.selectedStyle="";
+    //  field.selectedStyle="";
 
-      if(field.type=="checkBox"){
-        this.$refs[field.code+"_border"][0].style="border: 0px solid #97c5f5;padding-top:2px;padding-bottom:2px";
-      //  this.$refs[field.code+"_del"][0].style="font-size: 15px;position:absolute;right:-1px;top:-11px;color:red;display:none";
-      }
+      this.$set(field,"delIconStatus", "del-icon-hide")
+
+      this.$set(field,"editIconStatus", "edit-icon-hide")
+
+      
+      this.$set(field,"selectedStyle", "");
+
+      // if(field.type=="checkBox"){
+      //   this.$refs[field.code+"_border"][0].style="border: 0px solid #97c5f5;padding-top:2px;padding-bottom:2px";
+      // //  this.$refs[field.code+"_del"][0].style="font-size: 15px;position:absolute;right:-1px;top:-11px;color:red;display:none";
+      // }
+      console.log(JSON.stringify(field));
 
     },
     comOptMouseMove(field,type){
